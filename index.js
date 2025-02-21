@@ -42,10 +42,10 @@ app.get('/user',async(req,res)=>{
 
     // POST endpoint to save user data
     app.post('/user', async (req, res) => {
-        // console.log(req.body);
+        
         const { userId, displayName, email } = req.body;
         try {
-          // Save the user to MongoDB
+          
           await userscollection.insertOne({ userId, displayName, email });
           res.status(201).json({ message: 'User saved successfully' });
         } catch (error) {
@@ -55,22 +55,25 @@ app.get('/user',async(req,res)=>{
       });
       
     //   get all tasks
-    app.get('/tasks', async(req,res)=>{
-        try{
-            const tasks = taskscollection.find()
-            const result = await tasks.toArray()
-            res.send(result)
-        }catch(err){
-            res.status(500).json({message:'Error fetching tasks'})
-        }
-    })
-
-    // add a new task
-    app.post('/tasks', async (req, res) => {
+    app.get('/tasks/:email', async (req, res) => {
+      const { email } = req.params; 
+    
+      try {
+       
+        const tasks = await taskscollection.find({ email }).toArray();
+        res.send(tasks); 
+      } catch (err) {
+        console.error("Error fetching tasks:", err);
+        res.status(500).json({ message: 'Error fetching tasks' });
+      }
+    });
+    
+    
+    app.post('/tasks/', async (req, res) => {
     try {
-        const { title, description, category } = req.body;
+        const { title, description, category,email } = req.body;
 
-        if (!title || !description || !category) {
+        if (!title || !description || !category || !email) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -78,6 +81,7 @@ app.get('/user',async(req,res)=>{
             title,
             description,
             category,
+            email,
             createdAt: new Date() 
         };
 
@@ -116,7 +120,7 @@ app.put('/tasks/:id', async (req, res) => {
     const { id } = req.params;
     let updatedTask = req.body;
 
-    // Ensure _id is not included in the update data
+  
     delete updatedTask._id;
 
     try {

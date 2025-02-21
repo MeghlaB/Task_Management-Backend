@@ -46,8 +46,7 @@
 - **MongoDB** 
 
 ### Authentication:
-- **Firebase Authentication** - Secure and easy authentication system for user login
--  **JWT Authentication** - For secure user login and authorization.
+- **Firebase Authentication** - Secure and easy authentication system for user 
 
 ---
 ### Frontend Dependencies:
