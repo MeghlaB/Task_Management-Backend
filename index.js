@@ -1,10 +1,13 @@
 const express = require('express')
 const cors = require('cors');
 
+
 require('dotenv').config();
 const app = express()
 const port = process.env.PORT || 5000
+
 app.use(express.json());
+
 app.use(cors({
     origin: ['https://task-management-3e540.web.app',
       'http://localhost:5173',
@@ -120,10 +123,22 @@ app.put('/tasks/:id', async (req, res) => {
     const { id } = req.params;
     let updatedTask = req.body;
 
-  
+    // Check if the ID is valid
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid task ID format" });
+    }
+
     delete updatedTask._id;
 
     try {
+        console.log("Received ID:", id);
+        console.log("Updated Task Data:", updatedTask);
+
+        const existingTask = await taskscollection.findOne({ _id: new ObjectId(id) });
+        if (!existingTask) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
         const result = await taskscollection.updateOne(
             { _id: new ObjectId(id) },
             { $set: updatedTask }
@@ -132,21 +147,22 @@ app.put('/tasks/:id', async (req, res) => {
         if (result.modifiedCount === 1) {
             res.json({ message: "Task updated successfully" });
         } else {
-            res.status(404).json({ message: "Task not found or no changes applied" });
+            res.status(400).json({ message: "No changes applied" });
         }
     } catch (err) {
         console.error("Error updating task:", err);
-        res.status(500).json({ message: "Error updating task" });
+        res.status(500).json({ message: "Internal Server Error", error: err.message });
     }
 });
 
 
 
+
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
